@@ -16,12 +16,12 @@ class Block {
         float centerOfMass;
     public:
         float * GetXnLength();
+        float * GetYnHeight();
         float GetMass();
         float GetCenterOfMass();
 
         int RandomizeBlock();
         void CalculatePhysicalProps();
-        bool CheckBlockFall();
 };
 
 class Tower {
@@ -152,6 +152,13 @@ float * Block::GetXnLength() {
     return array;
 }
 
+float * Block::GetYnHeight() {
+    float array[2];
+    array[0] = y_pos;
+    array[1] = height;
+    return array;
+}
+
 float Block::GetMass() {
     return mass;
 }
@@ -164,16 +171,16 @@ int Block::RandomizeBlock() {
     shape = rand() % 3;
     mass = rand() % 41 + 10;
     if(shape == 0) {
-        height = 1;
-        length = 3;
+        height = 1*12;
+        length = 3*12;
     }
     else if(shape == 1) {
-        height = 3;
-        length = 1;
+        height = 3*12;
+        length = 1*12;
     }
     else if(shape == 2) {
-        height = 2;
-        length = 2;
+        height = 2*12;
+        length = 2*12;
     }
 }
 
@@ -183,6 +190,13 @@ void Block::CalculatePhysicalProps() {
 }
 
 bool Tower::CheckBlockFall() {
+    // While block isn't hitting a previous block's y, make it fall
+    while (b[blockCount-1].GetYnHeight()[0]+b[blockCount-1].GetYnHeight()[1] < b[blockCount-2].GetYnHeight()[0]) {
+        // Draw over previous shape
+        // Draw new shape over previous shape
+    }
+
+    // If the center of mass is outside the block's length, it will tip and fall
     if (b[blockCount-1].GetCenterOfMass() < b[blockCount-2].GetXnLength()[0]
     && b[blockCount-1].GetCenterOfMass() > b[blockCount-2].GetXnLength()[0]+b[blockCount-2].GetXnLength()[1]) {
         return true; // Block will tip over and fall
