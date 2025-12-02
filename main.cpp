@@ -3,12 +3,18 @@
 
 class Block {
     private:
-    int shape;
-    float inertia;
-    float mass;
+        int shape;
+        // Dimensions
+        float x_pos;
+        float height;
+        float length;
+        float mass;
+        // Physical properties
+        float momentOfInertia;
+        float centerOfMass;
     public:
-    int RandomizeBlock();
-    int CalculatePhysicalProps();
+        int RandomizeBlock();
+        void CalculatePhysicalProps();
 };
 
 void BlockFall();
@@ -122,4 +128,14 @@ int main()
         LCD.Update();
     }
     return 0;
+}
+
+void Block::CalculatePhysicalProps() {
+    // TODO: Create moment of inertia calculations for each shape
+    // Rectangle
+    momentOfInertia = (1/12)*mass*(pow(height,2)+pow(length,2));
+
+    // TODO: Create center of gravity calculations for each shape
+    // Rectangle
+    centerOfMass = x_pos + (1/2)*length;
 }
