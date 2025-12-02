@@ -15,6 +15,8 @@ class Block {
         float momentOfInertia;
         float centerOfMass;
     public:
+        float GetMass();
+        float GetCenterOfMass();
         int RandomizeBlock();
         void CalculatePhysicalProps();
         bool CheckBlockFall();
@@ -22,7 +24,7 @@ class Block {
 
 class Tower {
     private:
-        class Block b[];
+        class Block b[200];
     public:
         bool CheckTowerFall();
 };
@@ -138,6 +140,14 @@ int main()
     return 0;
 }
 
+float Block::GetMass() {
+    return mass;
+}
+
+float Block::GetCenterOfMass() {
+    return centerOfMass;
+}
+
 int Block::RandomizeBlock() {
     shape = rand() % 3;
     mass = rand() % 41 + 10;
@@ -158,4 +168,8 @@ int Block::RandomizeBlock() {
 void Block::CalculatePhysicalProps() {
     // Center of mass for both rectangles and box
     centerOfMass = x_pos + (0.5)*length;
+}
+
+void DisplayResults() {
+
 }
