@@ -70,11 +70,12 @@ int main()
         while(LCD.Touch(&x_trash, &y_trash)); // Wait for release
 
         if(x_pos > 40 && x_pos < 140 && y_pos > 115 && y_pos < 155) { // Play        
-            LCD.SetFontColor(BLACK);
-            LCD.FillRectangle(0, 0, 500, 500);
-            LCD.SetFontColor(WHITE);
+            //LCD.SetFontColor(BLACK);
+            //LCD.FillRectangle(0, 0, 500, 500);
+            //LCD.SetFontColor(WHITE);
+            DisplayResults();
             LCD.Write("Play game here");
-            LCD.WriteAt("< Quit >", 280, 200);
+            LCD.WriteAt("<Quit>", 280, 200);
         }
         else if(x_pos > 175 && x_pos < 275 && y_pos > 115 && y_pos < 155) { // How to Play
             LCD.SetFontColor(BLACK);
@@ -85,7 +86,7 @@ int main()
             LCD.WriteAt("Stack the block on the platform or other blocks", 15, 90);
             LCD.WriteAt("Keep the center of gravity of the tower centered", 15, 110);
             LCD.WriteAt("If the tower becomes too unstable, it will fall", 20, 130);
-            LCD.WriteAt("< Quit >", 280, 200);
+            LCD.WriteAt("<Quit>", 280, 200);
         }
         else if(x_pos > 40 && x_pos < 140 && y_pos > 175 && y_pos < 215) { // Stats/Leaderboard
             LCD.SetFontColor(BLACK);
@@ -99,7 +100,7 @@ int main()
             LCD.WriteAt("4", 200, 70);
             LCD.WriteAt("20 m", 200, 100);
             LCD.WriteAt("52", 200, 130);
-            LCD.WriteAt("< Quit >", 280, 200);
+            LCD.WriteAt("<Quit>", 280, 200);
         }
         else if(x_pos > 175 && x_pos < 275 && y_pos > 175 && y_pos < 215 ) { // Credits
             LCD.SetFontColor(BLACK);
@@ -110,7 +111,7 @@ int main()
             LCD.WriteAt("Alexander Ntragatakis and Jennifer Lee", 42, 90);
             LCD.WriteAt("Menu Background Image:", 95, 120);
             LCD.WriteAt("freepik.com", 120, 140);
-            LCD.WriteAt("< Quit >", 280, 200);
+            LCD.WriteAt("<Quit>", 280, 200);
         }
         LCD.Update();
         
@@ -189,5 +190,13 @@ bool Tower::CheckBlockFall() {
 }
 
 void DisplayResults() {
-
+    LCD.SetFontColor(STEELBLUE);
+    LCD.FillRectangle(0, 0, 320, 240);
+    LCD.SetFontColor(LIGHTSTEELBLUE);
+    LCD.FillRectangle(25, 15, 270, 210);
+    LCD.SetFontColor(WHITE);
+    LCD.DrawRectangle(25, 15, 270, 210);
+    LCD.WriteAt("Results", 140, 25);
+    LCD.WriteAt("Tower Height:", 50, 50);
+    LCD.WriteAt("Number of Blocks:", 50, 70);
 }
