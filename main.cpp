@@ -5,6 +5,7 @@
 class Block {
     private:
         int shape;
+        FEHImage image;
         // Dimensions
         float x_pos;
         float y_pos;
@@ -20,6 +21,7 @@ class Block {
         float * GetYnHeight();
         float GetMass();
         float GetCenterOfMass();
+        FEHImage GetImage();
 
         int RandomizeBlock();
         void CalculatePhysicalProps();
@@ -183,20 +185,27 @@ float Block::GetCenterOfMass() {
     return centerOfMass;
 }
 
+FEHImage Block::GetImage() {
+    return image;
+}
+
 int Block::RandomizeBlock() {
     shape = rand() % 3;
     mass = rand() % 41 + 10;
     if(shape == 0) {
-        height = 1*12;
-        length = 3*12;
+        height = 12;
+        length = 36;
+        image.Open("WoodPlankLong.png");
     }
     else if(shape == 1) {
-        height = 3*12;
-        length = 1*12;
+        height = 36;
+        length = 12;
+        image.Open("WoodPlankTall.png");
     }
     else if(shape == 2) {
-        height = 2*12;
-        length = 2*12;
+        height = 24;
+        length = 24;
+        image.Open("WoodPlankSquare.png");
     }
 }
 
@@ -281,10 +290,14 @@ void addNextBlock(class Block *block) {
     block->RandomizeBlock();
     block->CalculatePhysicalProps();
     block->SetXnY(250,250); // todo: Set coords where "next" placeholder is
+    block->GetImage().Draw(200,120);
+    LCD.Update();
 }
 
 void addToPlayBlock(class Block *block) {
     block->SetXnY(100,100); // todo: Set coords where "play" placeholder is
+    block->GetImage().Draw(120,120);
+    LCD.Update();
 }
 
 void PlayGame() {
