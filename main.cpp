@@ -37,7 +37,7 @@ void DisplayResults();
 
 int main()
 {
-    FEHImage menuBg;
+    FEHImage menuBg, woodLong, woodTall;
     float x_pos, y_pos; //coords clicked
     float x_trash, y_trash; //coords released at
     int total_games = 0, total_blocks = 0, tallest_tower = 0;
@@ -45,6 +45,9 @@ int main()
     /* Background image for menu screen */
     menuBg.Open("MenuBG.png");
     menuBg.Draw(0, -10);
+
+    /* Images for building materials */
+    woodLong.Open("WoodPlankLong.png");
     
     /* Buttons on menu */ 
     LCD.SetFontColor(LIGHTBLUE);
