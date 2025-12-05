@@ -27,19 +27,10 @@ class Block {
         void CalculatePhysicalProps();
 };
 
-class Tower {
-    private:
-        class Block b[200];
-        int blockCount;
-        float towerCOM;
-    public:
-        void AddBlockCount();
+bool CheckTowerFall(Block b[], int blockCount);
+bool CheckBlockFall(Block b[], int blockCount);
 
-        bool CheckTowerFall();
-        bool CheckBlockFall();
-};
-
-void PlayGame(Tower);
+void PlayGame();
 void DisplayResults();
 
 int main()
@@ -48,7 +39,6 @@ int main()
     float x_pos, y_pos; //coords clicked
     float x_trash, y_trash; //coords released at
     int total_games = 0, total_blocks = 0, tallest_tower = 0;
-    Tower t;
 
     /* Background image for menu and game */
     menuBg.Open("MenuBG.png");
@@ -86,7 +76,7 @@ int main()
         if(x_pos > 40 && x_pos < 140 && y_pos > 115 && y_pos < 155) { // Play   
             gameBg.Draw(0, 0);
             LCD.Update();
-            PlayGame(t);     
+            PlayGame();     
             DisplayResults();
             LCD.Write("Play game here");
             LCD.WriteAt("<Quit>", 280, 200);
@@ -215,9 +205,8 @@ void Block::CalculatePhysicalProps() {
     centerOfMass = x_pos + (0.5)*length;
 }
 
-void Tower::AddBlockCount() { blockCount+=1; }
 
-bool Tower::CheckBlockFall() {
+bool CheckBlockFall(Block b[], int blockCount) {
     // While block isn't hitting a previous block's y, make it fall
     while (b[blockCount-1].GetYnHeight()[0]+b[blockCount-1].GetYnHeight()[1] < b[blockCount-2].GetYnHeight()[0]) {
         // Draw over previous shape
@@ -234,7 +223,7 @@ bool Tower::CheckBlockFall() {
     }
 }
 
-bool Tower::CheckTowerFall() {
+bool CheckTowerFall(Block b[], int blockCount) {
     // Get the tower center of mass
     float towerCOM=0;
     float totalMass=0;
@@ -321,37 +310,42 @@ void dragBlock(class Block *block, int count) { // Index of dragged block is cou
     }
 }
 
-void PlayGame(Tower t) {
+void PlayGame() {
+    FEHImage gameBg;
+    gameBg.Open("GameBG.png");
+
     bool playing = true;
-    int index = 0, x_pos, y_pos;
-    class Block blocks[100];
+    int blockCount = 0, x_pos, y_pos;
+    class Block blocks[50];
     while (playing) {
         // Create the first block
-        if(index == 0) {
-            blocks[index].RandomizeBlock();
-            blocks[index].CalculatePhysicalProps();
-            addToPlayBlock(&blocks[index]);
+        if(blockCount == 0) {
+            blocks[blockCount].RandomizeBlock();
+            blocks[blockCount].CalculatePhysicalProps();
+            addToPlayBlock(&blocks[blockCount]);
+            blockCount+=1;
         }
 
         // Create the next block
-        blocks[index + 1].RandomizeBlock();
-        blocks[index + 1].CalculatePhysicalProps();
-        addToPlayBlock(&blocks[index + 1]);
-        
-        //dragBlock(&blocks[index], index+1);
+        addNextBlock(&blocks[blockCount]);
+        blockCount+=1;
 
+        // Dragging for the first toPlay block
         while (!LCD.Touch(&x_pos, &y_pos)){};
         while (LCD.Touch(&x_pos, &y_pos)) {
-            blocks[index].GetImage().Close();
-            blocks[index].GetImage().Draw(x_pos, y_pos);
+            gameBg.Draw(0,0);
+            addToPlayBlock(&blocks[1]);
+
+            blocks[0].GetImage().Close();
+            blocks[0].GetImage().Draw(x_pos, y_pos);
         }
         
         
-        if(t.CheckTowerFall()) { //If tower falls, end game and display results
+        if(CheckTowerFall((blocks), blockCount)) { //If tower falls, end game and display results
             break;
         }
         else { //add another block
-            index++;
+            blockCount++;
         }  
     }
 }
