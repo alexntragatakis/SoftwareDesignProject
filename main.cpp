@@ -28,7 +28,6 @@ class Block {
 };
 
 bool CheckTowerFall(Block b[], int blockCount);
-bool CheckBlockFall(Block b[], int blockCount);
 
 void PlayGame();
 void DisplayResults();
@@ -205,21 +204,6 @@ void Block::CalculatePhysicalProps() {
     centerOfMass = x_pos + (0.5)*length;
 }
 
-
-bool CheckBlockFall(Block b[], int blockCount) {
-    // If the center of mass is outside the block's length, it will tip and fall
-    if (blockCount>0) {
-        if (b[blockCount].GetCenterOfMass() < b[blockCount-1].GetXnLength()[0]
-        && b[blockCount].GetCenterOfMass() > b[blockCount-1].GetXnLength()[0]+b[blockCount-1].GetXnLength()[1]) {
-            return true; // Block will tip over and fall
-        }
-        else {
-            return false;
-        }
-    }
-    else { return false; }
-}
-
 bool CheckTowerFall(Block b[], int blockCount) {
     // Recalculate physical properties for each block
     for (int i=0; i<=blockCount; i++) { b[i].CalculatePhysicalProps(); }
@@ -239,19 +223,21 @@ bool CheckTowerFall(Block b[], int blockCount) {
     }
 
     // Check if center of mass for blocks on another block are on the length of the block
-    for (int i=0; i<blockCount; i++) {
-        int platformBlockIndex = i;
-        float aboveCOM = 0;
-        float aboveTotalMass=0;
-        for (int j=i+1; j<blockCount; j++) { // Loop through blocks above the platformBlock
-            // Calculate aboveCOM
-            aboveCOM+=(b[j].GetMass() * b[j].GetCenterOfMass());
-            aboveTotalMass+=b[j].GetMass();
-        }
-        aboveCOM/=aboveTotalMass;
+    if (blockCount>0) {
+        for (int i=0; i<=blockCount; i++) {
+            int platformBlockIndex = i;
+            float aboveCOM = 0;
+            float aboveTotalMass=0;
+            for (int j=i+1; j<=blockCount; j++) { // Loop through blocks above the platformBlock
+                // Calculate aboveCOM
+                aboveCOM+=(b[j].GetMass() * b[j].GetCenterOfMass());
+                aboveTotalMass+=b[j].GetMass();
+            }
+            aboveCOM/=aboveTotalMass;
 
-        if (aboveCOM < b[i].GetXnLength()[0] || aboveCOM > b[i].GetXnLength()[0]+b[i].GetXnLength()[1]) {
-            return true;
+            if (aboveCOM < b[i].GetXnLength()[0] || aboveCOM > b[i].GetXnLength()[0]+b[i].GetXnLength()[1]) {
+                return true;
+            }
         }
     }
     return false; // Runs through the loop and nothing falls
@@ -277,6 +263,7 @@ void moveNextBlock(class Block *block) {
 void moveToPlayBlock(class Block *block) {
     block->SetXnY(250,224-block->GetYnHeight()[1]); // todo: Set coords where "play" placeholder is
     block->GetImage().Draw(250,224-block->GetYnHeight()[1]);
+    LCD.WriteAt(block->GetMass(),250,190);
 }
 
 void generateNextBlock(class Block *block) {
@@ -344,7 +331,7 @@ void PlayGame() {
                 blocks[blocksInPlay].GetImage().Draw(blocks[blocksInPlay].GetXnLength()[0],blocks[blocksInPlay].GetYnHeight()[0]);
                 LCD.Update();
             }
-            if(CheckTowerFall(&(blocks[0]), blocksInPlay) || CheckBlockFall(&(blocks[0]), blocksInPlay)) { //If tower falls, end game and display results
+            if(CheckTowerFall(&(blocks[0]), blocksInPlay)) { //If tower falls, end game and display results
                 return;
             }
             else { blocksInPlay+=1; }
