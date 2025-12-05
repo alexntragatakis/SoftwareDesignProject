@@ -207,12 +207,6 @@ void Block::CalculatePhysicalProps() {
 
 
 bool CheckBlockFall(Block b[], int blockCount) {
-    // While block isn't hitting a previous block's y, make it fall
-    while (b[blockCount-1].GetYnHeight()[0]+b[blockCount-1].GetYnHeight()[1] < b[blockCount-2].GetYnHeight()[0]) {
-        // Draw over previous shape
-        // Draw new shape over previous shape
-    }
-
     // If the center of mass is outside the block's length, it will tip and fall
     if (b[blockCount-1].GetCenterOfMass() < b[blockCount-2].GetXnLength()[0]
     && b[blockCount-1].GetCenterOfMass() > b[blockCount-2].GetXnLength()[0]+b[blockCount-2].GetXnLength()[1]) {
@@ -273,18 +267,19 @@ void DisplayResults() {
     LCD.WriteAt("Number of Blocks:", 50, 70);
 }
 
-void addNextBlock(class Block *block) {
-    block->RandomizeBlock();
-    block->CalculatePhysicalProps();
-    block->SetXnY(250,250); // todo: Set coords where "next" placeholder is
-    block->GetImage().Draw(200,120);
-    LCD.Update();
+void moveNextBlock(class Block *block) {
+    block->SetXnY(290,200); // todo: Set coords where "next" placeholder is
+    block->GetImage().Draw(290,180);
 }
 
-void addToPlayBlock(class Block *block) {
-    block->SetXnY(40,40); // todo: Set coords where "play" placeholder is
-    block->GetImage().Draw(40,40);
-    LCD.Update();
+void moveToPlayBlock(class Block *block) {
+    block->SetXnY(250,200); // todo: Set coords where "play" placeholder is
+    block->GetImage().Draw(250,180);
+}
+
+void generateNextBlock(class Block *block) {
+    block->RandomizeBlock();
+    block->CalculatePhysicalProps();
 }
 
 void dragBlock(class Block *block, int count) { // Index of dragged block is count-1
@@ -315,31 +310,53 @@ void PlayGame() {
     gameBg.Open("GameBG.png");
 
     bool playing = true;
-    int blockCount = 0, x_pos, y_pos;
+    int blockCount = 0, blocksInPlay = 0, x_pos, y_pos;
     class Block blocks[50];
     while (playing) {
-        // Create the first block
-        if(blockCount == 0) {
-            blocks[blockCount].RandomizeBlock();
-            blocks[blockCount].CalculatePhysicalProps();
-            addToPlayBlock(&blocks[blockCount]);
-            blockCount+=1;
-        }
-
-        // Create the next block
-        addNextBlock(&blocks[blockCount]);
+        // Generate and place first two blocks
+        generateNextBlock(&blocks[blockCount]);
+        moveToPlayBlock(&blocks[blockCount]);
         blockCount+=1;
-
-        // Dragging for the first toPlay block
-        while (!LCD.Touch(&x_pos, &y_pos)){};
-        while (LCD.Touch(&x_pos, &y_pos)) {
-            gameBg.Draw(0,0);
-            addToPlayBlock(&blocks[1]);
-
-            blocks[0].GetImage().Close();
-            blocks[0].GetImage().Draw(x_pos, y_pos);
+        generateNextBlock(&blocks[blockCount]);
+        moveNextBlock(&blocks[blockCount]);
+        blockCount+=1;
+        
+        LCD.Update();
+        for (int i=0;i<10;i++) {
+            // Dragging for the toPlay block
+            while (!LCD.Touch(&x_pos, &y_pos)){};
+            generateNextBlock(&blocks[blockCount]);
+            moveToPlayBlock(&blocks[blockCount-1]);
+            moveNextBlock(&blocks[blockCount]);
+            while (LCD.Touch(&x_pos, &y_pos)) {
+                gameBg.Draw(0,0);
+                moveToPlayBlock(&blocks[blockCount-1]);
+                moveNextBlock(&blocks[blockCount]);
+                blocks[blocksInPlay].GetImage().Draw(x_pos, y_pos);
+                
+                LCD.Update();
+            }
+            blockCount+=1;
+            blocks[blocksInPlay].SetXnY(x_pos,y_pos);
+            // While block isn't hitting the platform, make it fall
+            while (blocks[blocksInPlay].GetYnHeight()[0]+blocks[blocksInPlay].GetYnHeight()[1] < 200) {
+                gameBg.Draw(0,0);
+                // Draw blocks in play
+                for (int i=0;i<blocksInPlay;i++) {
+                    blocks[i].GetImage().Draw(blocks[i].GetXnLength()[0],blocks[i].GetYnHeight()[0]);
+                }
+                // Draw blocks in line
+                moveToPlayBlock(&blocks[blocksInPlay+1]);
+                moveNextBlock(&blocks[blocksInPlay+2]);
+                // Have block fall
+                blocks[blocksInPlay].SetXnY(blocks[blocksInPlay].GetXnLength()[0],blocks[blocksInPlay].GetYnHeight()[0]+10);
+                blocks[blocksInPlay].GetImage().Draw(blocks[blocksInPlay].GetXnLength()[0],blocks[blocksInPlay].GetYnHeight()[0]);
+                LCD.Update();
+            }
+            blocksInPlay+=1;
         }
         
+        while (!LCD.Touch(&x_pos, &y_pos)){};
         
         if(CheckTowerFall((blocks), blockCount)) { //If tower falls, end game and display results
             break;
