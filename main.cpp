@@ -330,6 +330,11 @@ void PlayGame() {
             moveNextBlock(&blocks[blockCount]);
             while (LCD.Touch(&x_pos, &y_pos)) {
                 gameBg.Draw(0,0);
+                // Draw blocks in play
+                for (int i=0;i<blocksInPlay;i++) {
+                    blocks[i].GetImage().Draw(blocks[i].GetXnLength()[0],blocks[i].GetYnHeight()[0]);
+                }
+                // Draw blocks in line
                 moveToPlayBlock(&blocks[blockCount-1]);
                 moveNextBlock(&blocks[blockCount]);
                 blocks[blocksInPlay].GetImage().Draw(x_pos, y_pos);
@@ -349,7 +354,7 @@ void PlayGame() {
                 moveToPlayBlock(&blocks[blocksInPlay+1]);
                 moveNextBlock(&blocks[blocksInPlay+2]);
                 // Have block fall
-                blocks[blocksInPlay].SetXnY(blocks[blocksInPlay].GetXnLength()[0],blocks[blocksInPlay].GetYnHeight()[0]+10);
+                blocks[blocksInPlay].SetXnY(blocks[blocksInPlay].GetXnLength()[0],blocks[blocksInPlay].GetYnHeight()[0]+0.8);
                 blocks[blocksInPlay].GetImage().Draw(blocks[blocksInPlay].GetXnLength()[0],blocks[blocksInPlay].GetYnHeight()[0]);
                 LCD.Update();
             }
