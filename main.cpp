@@ -208,20 +208,25 @@ void Block::CalculatePhysicalProps() {
 
 bool CheckBlockFall(Block b[], int blockCount) {
     // If the center of mass is outside the block's length, it will tip and fall
-    if (b[blockCount-1].GetCenterOfMass() < b[blockCount-2].GetXnLength()[0]
-    && b[blockCount-1].GetCenterOfMass() > b[blockCount-2].GetXnLength()[0]+b[blockCount-2].GetXnLength()[1]) {
-        return true; // Block will tip over and fall
+    if (blockCount>0) {
+        if (b[blockCount].GetCenterOfMass() < b[blockCount-1].GetXnLength()[0]
+        && b[blockCount].GetCenterOfMass() > b[blockCount-1].GetXnLength()[0]+b[blockCount-1].GetXnLength()[1]) {
+            return true; // Block will tip over and fall
+        }
+        else {
+            return false;
+        }
     }
-    else {
-        return false;
-    }
+    else { return false; }
 }
 
 bool CheckTowerFall(Block b[], int blockCount) {
+    // Recalculate physical properties for each block
+    for (int i=0; i<=blockCount; i++) { b[i].CalculatePhysicalProps(); }
     // Get the tower center of mass
     float towerCOM=0;
     float totalMass=0;
-    for (int i=0; i<blockCount; i++) {
+    for (int i=0; i<=blockCount; i++) {
         towerCOM+=(b[i].GetMass() * b[i].GetCenterOfMass());
         totalMass+=b[i].GetMass();
     }
@@ -229,11 +234,8 @@ bool CheckTowerFall(Block b[], int blockCount) {
 
     // Check if tower center of mass is outside the platform
     // TODO: make actual platform dimensions (this assumes 100 < x < 200)
-    if (towerCOM < 100 || towerCOM > 200) {
+    if (towerCOM < 130 || towerCOM > 190) {
         return true; // tower tips over
-    }
-    else {
-        return false;
     }
 
     // Check if center of mass for blocks on another block are on the length of the block
@@ -326,7 +328,10 @@ void PlayGame() {
             bool condition1 = (i==0), condition2 = (i>0);
 
             // Dragging for the toPlay block
-            while (!LCD.Touch(&x_pos, &y_pos)){};
+            while (!(LCD.Touch(&x_pos, &y_pos) && x_pos>blocks[blocksInPlay].GetXnLength()[0]
+            && x_pos<blocks[blocksInPlay].GetXnLength()[0]+blocks[blocksInPlay].GetXnLength()[1]
+            && y_pos>blocks[blocksInPlay].GetYnHeight()[0]
+            && y_pos<blocks[blocksInPlay].GetYnHeight()[0]+blocks[blocksInPlay].GetYnHeight()[1])){}; // todo: fix boundaries for clicking on blocks
             generateNextBlock(&blocks[blockCount]);
             moveToPlayBlock(&blocks[blockCount-1]);
             moveNextBlock(&blocks[blockCount]);
@@ -344,7 +349,8 @@ void PlayGame() {
                 LCD.Update();
             }
             blockCount+=1;
-            blocks[blocksInPlay].SetXnY(x_pos,y_pos);
+            blocks[blocksInPlay].SetXnY(x_pos,10);
+            LCD.Update();
             // While block isn't hitting the platform, make it fall
             while ((condition1 && blocks[blocksInPlay].GetYnHeight()[0]+blocks[blocksInPlay].GetYnHeight()[1] < 200) || 
             (condition2 && (blocks[blocksInPlay].GetYnHeight()[0]+blocks[blocksInPlay].GetYnHeight()[1] < blocks[blocksInPlay-1].GetYnHeight()[0]) )) {
@@ -361,16 +367,11 @@ void PlayGame() {
                 blocks[blocksInPlay].GetImage().Draw(blocks[blocksInPlay].GetXnLength()[0],blocks[blocksInPlay].GetYnHeight()[0]);
                 LCD.Update();
             }
-            blocksInPlay+=1;
+            if(CheckTowerFall(&(blocks[0]), blocksInPlay) || CheckBlockFall(&(blocks[0]), blocksInPlay)) { //If tower falls, end game and display results
+                return;
+            }
+            else { blocksInPlay+=1; }
         }
-        
-        while (!LCD.Touch(&x_pos, &y_pos)){};
-        
-        if(CheckTowerFall((blocks), blockCount)) { //If tower falls, end game and display results
-            break;
-        }
-        else { //add another block
-            blockCount++;
-        }  
+        return;
     }
 }
