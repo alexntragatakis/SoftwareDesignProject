@@ -78,7 +78,10 @@ int main()
             LCD.Update();
             game_blocks = 0;
             game_height = 0;
-            PlayGame(&game_blocks, &game_height);     
+            PlayGame(&game_blocks, &game_height);
+            total_games+=1;
+            total_blocks+=game_blocks;
+            tallest_tower+=game_height;     
             DisplayResults(game_blocks, game_height);
             LCD.Write("Play game here");
             LCD.WriteAt("<Quit>", 280, 200);
@@ -103,9 +106,9 @@ int main()
             LCD.WriteAt("Tallest Tower:", 60, 100);
             LCD.WriteAt("Total Blocks Stacked:", 60, 130);
             /* Example stats */
-            LCD.WriteAt("4", 200, 70);
-            LCD.WriteAt("20 m", 200, 100);
-            LCD.WriteAt("52", 200, 130);
+            LCD.WriteAt(total_games, 200, 70);
+            LCD.WriteAt(tallest_tower, 200, 100);
+            LCD.WriteAt(total_blocks, 200, 130);
             LCD.WriteAt("<Quit>", 280, 200);
         }
         else if(x_pos > 175 && x_pos < 275 && y_pos > 175 && y_pos < 215 ) { // Credits
@@ -255,9 +258,9 @@ void DisplayResults(int game_blocks, int game_height) {
     LCD.DrawRectangle(25, 15, 270, 210);
     LCD.WriteAt("Results", 140, 25);
     LCD.WriteAt("Tower Height:", 50, 50);
-    LCD.WriteAt(game_height, 130, 50);
+    LCD.WriteAt(game_height, 160, 50);
     LCD.WriteAt("Number of Blocks:", 50, 70);
-    LCD.WriteAt(game_blocks, 150, 70);
+    LCD.WriteAt(game_blocks, 160, 70);
 }
 
 void moveNextBlock(class Block *block) {
@@ -338,12 +341,16 @@ void PlayGame(int * game_blocks, int * game_height) {
             }
             if(CheckTowerFall(&(blocks[0]), blocksInPlay)) { //If tower falls, end game and display results
                 (*game_blocks) = blocksInPlay;
-                for (int i=0; i<=blocksInPlay; i++) {
+                for (int i=0; i<blocksInPlay; i++) {
                     (*game_height)+=blocks[i].GetYnHeight()[1];
                 }
                 return;
             }
             else { blocksInPlay+=1; }
+        }
+        (*game_blocks) = blocksInPlay;
+        for (int i=0; i<blocksInPlay; i++) {
+            (*game_height)+=blocks[i].GetYnHeight()[1];
         }
         return;
     }
