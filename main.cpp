@@ -2,6 +2,7 @@
 #include <FEHImages.h>
 #include <math.h>
 #include <stdio.h>
+#include <FEHUtility.h>
 
 class Block {
     private:
@@ -285,6 +286,7 @@ void PlayGame(int * game_blocks, int * game_height) {
 
     bool playing = true;
     int blockCount = 0, blocksInPlay = 0, x_pos, y_pos;
+    float towerHeight = 0;
     class Block blocks[50];
     while (playing) {
         // Generate and place first two blocks
@@ -321,7 +323,7 @@ void PlayGame(int * game_blocks, int * game_height) {
                 LCD.Update();
             }
             blockCount+=1;
-            blocks[blocksInPlay].SetXnY(x_pos,10);
+            blocks[blocksInPlay].SetXnY(x_pos, 0);
             LCD.Update();
             // While block isn't hitting the platform, make it fall
             while ((condition1 && blocks[blocksInPlay].GetYnHeight()[0]+blocks[blocksInPlay].GetYnHeight()[1] < 200) || 
@@ -339,11 +341,22 @@ void PlayGame(int * game_blocks, int * game_height) {
                 blocks[blocksInPlay].GetImage().Draw(blocks[blocksInPlay].GetXnLength()[0],blocks[blocksInPlay].GetYnHeight()[0]);
                 LCD.Update();
             }
+            towerHeight+=blocks[blocksInPlay].GetYnHeight()[1];
             if(CheckTowerFall(&(blocks[0]), blocksInPlay)) { //If tower falls, end game and display results
                 (*game_blocks) = blocksInPlay;
                 for (int i=0; i<blocksInPlay; i++) {
                     (*game_height)+=blocks[i].GetYnHeight()[1];
                 }
+                LCD.WriteAt("You lose...", 160, 20);
+                Sleep(5.0);
+                return;
+            } else if (towerHeight >= 160) {
+                (*game_blocks) = blocksInPlay;
+                for (int i=0; i<blocksInPlay; i++) {
+                    (*game_height)+=blocks[i].GetYnHeight()[1];
+                }
+                LCD.WriteAt("You win!", 160, 20);
+                Sleep(5.0);
                 return;
             }
             else { blocksInPlay+=1; }
