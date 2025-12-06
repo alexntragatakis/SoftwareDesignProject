@@ -84,7 +84,6 @@ int main()
             total_blocks+=game_blocks;
             tallest_tower+=game_height;     
             DisplayResults(game_blocks, game_height);
-            LCD.Write("Play game here");
             LCD.WriteAt("<Quit>", 280, 200);
         }
         else if(x_pos > 175 && x_pos < 275 && y_pos > 115 && y_pos < 155) { // How to Play
@@ -272,7 +271,10 @@ void moveNextBlock(class Block *block) {
 void moveToPlayBlock(class Block *block) {
     block->SetXnY(250,224-block->GetYnHeight()[1]); // todo: Set coords where "play" placeholder is
     block->GetImage().Draw(250,224-block->GetYnHeight()[1]);
-    LCD.WriteAt(block->GetMass(),250,190);
+    int intWeight = block->GetMass();
+    LCD.WriteAt(intWeight,210,175);
+    LCD.WriteAt("Next block weighs", 210, 165);
+    LCD.WriteAt("Kilograms",230,175);
 }
 
 void generateNextBlock(class Block *block) {
@@ -283,6 +285,7 @@ void generateNextBlock(class Block *block) {
 void PlayGame(int * game_blocks, int * game_height) {
     FEHImage gameBg;
     gameBg.Open("GameBG.png");
+    LCD.SetFontColor(WHITESMOKE);
 
     bool playing = true;
     int blockCount = 0, blocksInPlay = 0, x_pos, y_pos;
