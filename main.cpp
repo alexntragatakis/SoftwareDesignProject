@@ -104,6 +104,7 @@ int main()
             LCD.WriteAt("Statistics:", 120, 20);
             LCD.WriteAt("Total Games Played:", 60, 70);
             LCD.WriteAt("Tallest Tower:", 60, 100);
+            LCD.WriteAt("meters", 220, 100);
             LCD.WriteAt("Total Blocks Stacked:", 60, 130);
             /* Example stats */
             LCD.WriteAt(total_games, 200, 70);
@@ -126,7 +127,7 @@ int main()
         
         while(!LCD.Touch(&x_pos, &y_pos)) {} // Wait for touch
         while(LCD.Touch(&x_trash, &y_trash)); // Wait for release
-        if(x_pos > 280 && x_pos < 300 && y_pos > 200 && y_pos < 220) { // Quit
+        if(x_pos > 280 && x_pos < 320 && y_pos > 200 && y_pos < 220) { // Quit
             /* Background image for menu screen */
             menuBg.Open("MenuBG.png");
             menuBg.Draw(0, -10);
@@ -259,6 +260,7 @@ void DisplayResults(int game_blocks, int game_height) {
     LCD.WriteAt("Results", 140, 25);
     LCD.WriteAt("Tower Height:", 50, 50);
     LCD.WriteAt(game_height, 160, 50);
+    LCD.WriteAt("meters", 180, 50);
     LCD.WriteAt("Number of Blocks:", 50, 70);
     LCD.WriteAt(game_blocks, 160, 70);
 }
