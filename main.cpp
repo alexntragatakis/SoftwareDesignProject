@@ -1,57 +1,59 @@
+/* Preprocessor directives */
 #include "FEHLCD.h"
 #include <FEHImages.h>
 #include <math.h>
 #include <stdio.h>
 #include <FEHUtility.h>
 
+/* Struct tag */
 class Block {
     private:
         int shape;
         FEHImage image;
-        // Dimensions
+        // Location
         float x_pos;
         float y_pos;
+        // Physical properties
         float height;
         float length;
         float mass;
-        // Physical properties
         float centerOfMass;
     public:
+        // Functions to access and change vars
         void SetXnY(float x, float y);
         float * GetXnLength();
         float * GetYnHeight();
         float GetMass();
         float GetCenterOfMass();
         FEHImage GetImage();
-
         int RandomizeBlock();
         void CalculatePhysicalProps();
 };
 
+/* Function prototypes */
 bool CheckTowerFall(Block b[], int blockCount);
-
 void PlayGame(int *, int *);
 void DisplayResults(int, int);
 
 int main()
 {
-    FEHImage menuBg, gameBg, woodLong, woodTall, woodSquare;
-    float x_pos, y_pos; //coords clicked
-    float x_trash, y_trash; //coords released at
-    int total_games = 0, total_blocks = 0, tallest_tower = 0;
-    int game_blocks, game_height;
+    FEHImage menuBg, gameBg, woodLong, woodTall, woodSquare; // Images
+    float x_pos, y_pos; // Coords clicked at
+    float x_trash, y_trash; // Coords released at
+    int total_games = 0, total_blocks = 0, tallest_tower = 0; // Tracked statistics across all games
+    int game_blocks, game_height; // Statistics for the current game
 
-    /* Background image for menu and game */
+    /* Opens images for menu and game backgrounds */
     menuBg.Open("MenuBG.png");
     menuBg.Draw(0, -10);
     gameBg.Open("GameBG.png");
 
-    /* Images for building materials */
+    /* Opens images for building materials */
     woodLong.Open("WoodPlankLong.png");
     woodTall.Open("WoodPlankTall.png");
     woodSquare.Open("WoodPlankSquare.png");
     
-    /* Buttons on menu */ 
+    /* Draws buttons on menu */ 
     LCD.SetFontColor(LIGHTBLUE);
     LCD.FillRectangle(40, 115, 100, 40);
     LCD.FillRectangle(175, 115, 100, 40);
@@ -70,69 +72,94 @@ int main()
     LCD.WriteAt("Credits", 203, 188);
 
     while (1) {
-        /* Display next screen from menu */
+        /* Waits for the user to click a button and remembers the location the click was at */
         while(!LCD.Touch(&x_pos, &y_pos)) {} // Wait for touch
         while(LCD.Touch(&x_trash, &y_trash)); // Wait for release
 
-        if(x_pos > 40 && x_pos < 140 && y_pos > 115 && y_pos < 155) { // Play   
-            gameBg.Draw(0, 0);
+        /* If-else structure to determine which button was clicked by the player. If a location outside the four buttons is clicked, nothing will happen */
+        if(x_pos > 40 && x_pos < 140 && y_pos > 115 && y_pos < 155) { // Play is clicked  
+            gameBg.Draw(0, 0); // Draws game background
             LCD.Update();
-            game_blocks = 0;
-            game_height = 0;
+            game_blocks = 0; // Number of blocks used in the current game (starts at 0)
+            game_height = 0; // Height of the tower in the current game (starts at 0)
+
+            // Calls PlayGame function to start the game
             PlayGame(&game_blocks, &game_height);
-            total_games+=1;
-            total_blocks+=game_blocks;
-            tallest_tower+=game_height;     
+
+            total_games+=1; // Updates total number of games played, tracked for statistics screen
+            total_blocks+=game_blocks; // Add blocks placed this game to the running total, tracked for statistics screen
+            if(tallest_tower < game_height) { // If the tower from the current game is taller than the previous tallest tower, set the tallest tower equal to the current tower, tracked for statistics screen
+                tallest_tower = game_height;
+            }   
+
+            // Calls the DisplayResults function to show the blocks placed and tower height from the current game
             DisplayResults(game_blocks, game_height);
+
+            // Draws Quit button to return to main menu
             LCD.WriteAt("<Quit>", 280, 200);
         }
-        else if(x_pos > 175 && x_pos < 275 && y_pos > 115 && y_pos < 155) { // How to Play
+        else if(x_pos > 175 && x_pos < 275 && y_pos > 115 && y_pos < 155) { // How to Play is clicked
+            // Draw background
             LCD.SetFontColor(BLACK);
             LCD.FillRectangle(0, 0, 500, 500);
             LCD.SetFontColor(WHITE);
+
+            // Instructions are printed on screen 
             LCD.WriteAt("How to Play:", 120, 20);
             LCD.WriteAt("You will be given a random block and its mass", 20, 70);
             LCD.WriteAt("Stack the block on the platform or other blocks", 15, 90);
             LCD.WriteAt("Keep the center of gravity of the tower centered", 15, 110);
             LCD.WriteAt("If the tower becomes too unstable, it will fall", 20, 130);
-            LCD.WriteAt("<Quit>", 280, 200);
+
+            // Draws quit button to return to main menu
+            LCD.WriteAt("<Quit>", 280, 200); 
         }
-        else if(x_pos > 40 && x_pos < 140 && y_pos > 175 && y_pos < 215) { // Stats/Leaderboard
+        else if(x_pos > 40 && x_pos < 140 && y_pos > 175 && y_pos < 215) { // Stats is clicked
+            // Draw background
             LCD.SetFontColor(BLACK);
             LCD.FillRectangle(0, 0, 500, 500);
             LCD.SetFontColor(WHITE);
+
+            // Display stats
             LCD.WriteAt("Statistics:", 120, 20);
             LCD.WriteAt("Total Games Played:", 60, 70);
             LCD.WriteAt("Tallest Tower:", 60, 100);
             LCD.WriteAt("meters", 220, 100);
             LCD.WriteAt("Total Blocks Stacked:", 60, 130);
-            /* Example stats */
             LCD.WriteAt(total_games, 200, 70);
             LCD.WriteAt(tallest_tower, 200, 100);
             LCD.WriteAt(total_blocks, 200, 130);
+
+            // Draws Quit button to return to main menu
             LCD.WriteAt("<Quit>", 280, 200);
         }
-        else if(x_pos > 175 && x_pos < 275 && y_pos > 175 && y_pos < 215 ) { // Credits
+        else if(x_pos > 175 && x_pos < 275 && y_pos > 175 && y_pos < 215 ) { // Credits is clicked
+            // Draw background
             LCD.SetFontColor(BLACK);
             LCD.FillRectangle(0, 0, 500, 500);
             LCD.SetFontColor(WHITE);
+
+            // Display credits
             LCD.WriteAt("Credits:", 130, 20);
             LCD.WriteAt("Developers:", 120, 70);
             LCD.WriteAt("Alexander Ntragatakis and Jennifer Lee", 42, 90);
             LCD.WriteAt("Menu Background Image:", 95, 120);
             LCD.WriteAt("freepik.com", 120, 140);
+
+            // Draws Quit button to return to main menu
             LCD.WriteAt("<Quit>", 280, 200);
         }
         LCD.Update();
         
+        // Returns to main menu once Quit is clicked 
         while(!LCD.Touch(&x_pos, &y_pos)) {} // Wait for touch
         while(LCD.Touch(&x_trash, &y_trash)); // Wait for release
-        if(x_pos > 280 && x_pos < 320 && y_pos > 200 && y_pos < 220) { // Quit
-            /* Background image for menu screen */
+        if(x_pos > 280 && x_pos < 320 && y_pos > 200 && y_pos < 220) { // Quit is clicked
+            /* Draws background image for menu screen */
             menuBg.Open("MenuBG.png");
             menuBg.Draw(0, -10);
             
-            /* Buttons on menu */
+            /* Draws buttons on menu */
             LCD.SetFontColor(LIGHTBLUE);
             LCD.FillRectangle(40, 115, 100, 40);
             LCD.FillRectangle(175, 115, 100, 40);
@@ -155,11 +182,15 @@ int main()
     return 0;
 }
 
+/* void SetXnY - Allows private variables x_pos and y_pos to be modified outside of Block members */
 void Block::SetXnY(float x, float y) {
     x_pos=x;
     y_pos=y;
 }
 
+/* float * GetXnLength - Allows private variables x_pos and length to be accessed outside of Block members 
+Returns an array where x_pos is at index 0 and length is at index 1 
+- Alex */
 float * Block::GetXnLength() {
     float array[2];
     array[0] = x_pos;
@@ -167,6 +198,9 @@ float * Block::GetXnLength() {
     return array;
 }
 
+/* float * GetYnHeight - Allows private variables y_pos and height to be accessed outside of Block members 
+Returns an array where y_pos is at index 0 and width is at index 1 
+- Alex */
 float * Block::GetYnHeight() {
     float array[2];
     array[0] = y_pos;
@@ -174,43 +208,60 @@ float * Block::GetYnHeight() {
     return array;
 }
 
+/* float GetMass - Allows private variable mass to be accessed outside of Block members 
+Returns mass as a float 
+- Jennifer */
 float Block::GetMass() {
     return mass;
 }
 
+/* float GetCenterOfMass - Allows private variable centerOfMass to be accessed outside of Block members 
+Returns centerOfMass as a float 
+- Jennifer */
 float Block::GetCenterOfMass() {
     return centerOfMass;
 }
 
+/* FEHImage GetImage - Allows private variable image to be accessed outside of Block members 
+Returns image as a FEHImage 
+- Alex */
 FEHImage Block::GetImage() {
     return image;
 }
 
+/* int RandomizeBlock - Each block will be assigned a random number (from 0-2) that will be used to decide its shape and a random mass (from 10-50kg)
+The generated values are then stored in shape and mass, respectively, and the coresponding image is opened 
+- Jennifer */
 int Block::RandomizeBlock() {
-    shape = rand() % 3;
-    mass = rand() % 41 + 10;
-    if(shape == 0) {
+    shape = rand() % 3; // Random number from 0-2 for the shape
+    mass = rand() % 41 + 10; // Random mass from 10-50 for the mass
+    if(shape == 0) { // Long wooden plank, height 12 pixels, length 36
         height = 12;
         length = 36;
         image.Open("WoodPlankLong.png");
     }
-    else if(shape == 1) {
+    else if(shape == 1) { // Tall wooden plank, height 36 pixels, length 12
         height = 36;
         length = 12;
         image.Open("WoodPlankTall.png");
     }
-    else if(shape == 2) {
+    else if(shape == 2) { // Square wooden plank, height 24 pixels, length 24
         height = 24;
         length = 24;
         image.Open("WoodPlankSquare.png");
     }
 }
 
+/* void CalculatePhysicalProps - Calculates the location of the center of mass of a block based on its position on-screen and its length 
+- Alex */
 void Block::CalculatePhysicalProps() {
     // Center of mass for both rectangles and box
     centerOfMass = x_pos + (0.5)*length;
 }
 
+/* bool CheckTowerFall - Returns true if the tower falls after a block is added and false if not 
+Calculations are based on the center of mass of the tower as a whole 
+- Alex */
 bool CheckTowerFall(Block b[], int blockCount) {
     // Recalculate physical properties for each block
     for (int i=0; i<=blockCount; i++) { b[i].CalculatePhysicalProps(); }
@@ -224,7 +275,6 @@ bool CheckTowerFall(Block b[], int blockCount) {
     towerCOM/=totalMass;
 
     // Check if tower center of mass is outside the platform
-    // TODO: make actual platform dimensions (this assumes 100 < x < 200)
     if (towerCOM < 130 || towerCOM > 190) {
         return true; // tower tips over
     }
@@ -250,6 +300,9 @@ bool CheckTowerFall(Block b[], int blockCount) {
     return false; // Runs through the loop and nothing falls
 }
 
+/* void DisplayResults - Once the game has ended, the number of blocks placed and the final height of the tower are displayed to the player 
+The player will be able to quit, returning to the main menu screen to play again or exit the game 
+- Jennifer */
 void DisplayResults(int game_blocks, int game_height) {
     LCD.SetFontColor(STEELBLUE);
     LCD.FillRectangle(0, 0, 320, 240);
